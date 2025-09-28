@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Attractive Online Quiz Application</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1: #0f2027; /* dark */
+      --bg2: #2c5364; /* teal */
+      --card: #ffffff;
+      --accent: #6a11cb;
+      --accent2:#2575fc;
+      --success:#28a745;
+      --danger:#e63946;
+      --glass: rgba(255,255,255,0.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg,var(--bg1),var(--bg2));
+      color:#222;
+      padding:20px;
+    }
+
+    .app{
+      width:100%;max-width:980px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,0.45);overflow:hidden;
+    }
+
+    header{
+      display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;
+    }
+    header h2{color:#fff;margin:0;font-weight:600}
+    header .user-area{color:#fff;display:flex;gap:12px;align-items:center}
+    header .user-area button{background:transparent;border:1px solid rgba(255,255,255,0.12);color:#fff;padding:8px 12px;border-radius:10px;cursor:pointer}
+
+    /* Layout areas */
+    .stage{min-height:420px;display:grid;grid-template-columns:1fr;gap:14px}
+
+    /* card */
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));padding:18px;border-radius:12px;color:#fff;backdrop-filter: blur(6px);box-shadow: 0 6px 18px rgba(0,0,0,0.35);} 
+
+    /* LOGIN */
+    .login-center{display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;padding:36px}
+    .login-center input{width:100%;max-width:420px;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:#fff}
+    .login-center .btn{margin-top:8px;background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;padding:12px 18px;border-radius:10px;color:#fff;font-weight:600;cursor:pointer}
+    .small{font-size:13px;color:rgba(255,255,255,0.75)}
+
+    /* topics */
+    .topics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .topic{padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));cursor:pointer;transition:transform .25s, box-shadow .25s;border:1px solid rgba(255,255,255,0.04)}
+    .topic:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(0,0,0,0.45)}
+    .topic h3{margin:0 0 8px 0}
+    .topic p{font-size:13px;color:rgba(255,255,255,0.8)}
+
+    /* quiz area */
+    .quiz-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .progress-wrap{flex:1;margin-right:12px}
+    .progress-text{font-size:14px;color:#fff;margin-bottom:6px}
+    .progress-bar{height:12px;background:rgba(255,255,255,0.08);border-radius:999px;overflow:hidden}
+    .progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s ease}
+    .meta{min-width:220px;text-align:right}
+
+    .question-box{padding:16px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);margin-bottom:12px}
+    .question-text{font-size:18px;margin-bottom:10px}
+    .options{display:grid;gap:10px}
+    .option{padding:12px;border-radius:10px;background:rgba(255,255,255,0.03);cursor:pointer;border:1px solid rgba(255,255,255,0.04);transition:transform .15s, background .15s}
+    .option:hover{transform:translateX(6px)}
+    .option.correct{background:linear-gradient(90deg,var(--success),#7be2a0);color:#042}
+    .option.wrong{background:linear-gradient(90deg,#f28b82,#f06292);color:#fff}
+    .disabled{pointer-events:none;opacity:0.9}
+
+    .footer-actions{display:flex;gap:10px;margin-top:12px}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.12);color:#fff;padding:10px 12px;border-radius:10px}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:#fff;padding:10px 14px;border-radius:10px}
+
+    /* leaderboard */
+    .lb{padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03)}
+    .lb h4{margin:0 0 8px 0}
+    .lb ol{margin:0;padding-left:18px}
+    .lb li{margin-bottom:6px}
+
+    /* responsive */
+    @media(max-width:880px){
+      .topics-grid{grid-template-columns:repeat(2,1fr)}
+      .quiz-top{flex-direction:column;align-items:flex-start}
+      .meta{text-align:left;width:100%}
+    }
+    @media(max-width:560px){
+      .topics-grid{grid-template-columns:repeat(1,1fr)}
+      body{padding:12px}
+      .stage{min-height:520px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h2> Online Quiz Application</h2>
+      <div class="user-area">
+        <div id="welcome" class="small" style="display:none">Welcome, <span id="displayName"></span></div>
+        <button id="logoutBtn" style="display:none">Logout</button>
+      </div>
+    </header>
+
+    <main class="stage">
+
+      <!-- LOGIN SCREEN -->
+      <section id="loginScreen" class="card">
+        <div class="login-center">
+          <h3 style="color:#fff">Sign in to start</h3>
+          <input id="username" placeholder="Enter your name" />
+          <input id="password" type="password" placeholder="Enter password (any)" />
+          <div style="display:flex;gap:10px;align-items:center">
+            <button class="btn" id="loginBtn">Sign In</button>
+            <div class="small">Or continue as <a href="#" id="guestLink" style="color:#fff;text-decoration:underline">Guest</a></div>
+          </div>
+          <div class="small" style="margin-top:8px;color:rgba(255,255,255,0.8)">Students & educators: this is a lightweight local demo — data is stored in your browser. created by indrajeet</div>
+        </div>
+      </section>
+
+      <!-- TOPIC SELECTION -->
+      <section id="topicScreen" class="card" style="display:none">
+        <h3 style="margin-top:0;color:#fff">Choose a Topic</h3>
+        <div class="topics-grid" id="topicsGrid"></div>
+      </section>
+
+      <!-- QUIZ SCREEN -->
+      <section id="quizScreen" class="card" style="display:none">
+        <div class="quiz-top">
+          <div class="progress-wrap">
+            <div class="progress-text" id="progressText">Question 1 of 5</div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          </div>
+          <div class="meta">
+            <div class="small">Time left: <strong id="timerDisplay">20</strong>s</div>
+            <div class="small" style="margin-top:6px">Topic: <span id="topicName"></span></div>
+          </div>
+        </div>
+
+        <div class="question-box">
+          <div class="question-text" id="questionText">Question will appear here</div>
+          <div class="options" id="optionsList"></div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <div class="footer-actions">
+            <button class="btn secondary" id="prevBtn">◀ Prev</button>
+            <button class="btn secondary" id="skipBtn">Skip ⏭</button>
+            <button class="btn primary" id="submitBtn">Submit Quiz</button>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+            <div class="lb" style="min-width:220px">
+              <h4 style="margin:0">🏆 Leaderboard</h4>
+              <ol id="leaderboardOl"></ol>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- RESULTS -->
+      <section id="resultScreen" class="card" style="display:none">
+        <h3 id="resultTitle"></h3>
+        <p id="resultSummary"></p>
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <button class="btn primary" id="replayBtn">Replay Quiz</button>
+          <button class="btn secondary" id="backTopicsBtn">Back to Topics</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <audio id="correctSound"><source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=" type="audio/wav"></audio>
+  <audio id="wrongSound"><source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=" type="audio/wav"></audio>
+  <audio id="timeoutSound"><source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=" type="audio/wav"></audio>
+
+  <script>
+    // ======= DATA =======
+    const QUESTION_COUNT = 5;
+    const TIME_PER_Q = 20; // seconds
+
+    const topics = {
+      'computer':{
+        title:'Computer Science',
+        desc:'Programming, networks & fundamentals',
+        qs:[
+          {q:'Which language is primarily used for web frontend?', a:['Python','C++','JavaScript','Java'], ans:'JavaScript'},
+          {q:'What does CPU stand for?', a:['Central Processing Unit','Computer Processing Unit','Central Performance Unit','Compute Primary Unit'], ans:'Central Processing Unit'},
+          {q:'Which is NOT a programming paradigm?', a:['Functional','Procedural','Relational','Object-Oriented'], ans:'Relational'},
+          {q:'What is the binary of decimal 5?', a:['101','111','010','100'], ans:'101'},
+          {q:'Which protocol is used to load web pages?', a:['FTP','HTTP','SMTP','SSH'], ans:'HTTP'}
+        ]
+      },
+      'math':{
+        title:'Mathematics',desc:'Algebra, calculus & arithmetic',
+        qs:[
+          {q:'What is 12 × 8?', a:['96','86','108','88'], ans:'96'},
+          {q:'What is derivative of x^2?', a:['x','2x','x^2','2'], ans:'2x'},
+          {q:'Value of π approx?', a:['2.14','3.14','4.14','3.41'], ans:'3.14'},
+          {q:'Solve: 7 + 6 ÷ 3', a:['13','9','5','17'], ans:'9'},
+          {q:'Which shape has 4 equal sides?', a:['Rectangle','Square','Rhombus','Trapezoid'], ans:'Square'}
+        ]
+      },
+      'physics':{
+        title:'Physics',desc:'Mechanics, energy & waves',
+        qs:[
+          {q:'Unit of force?', a:['Joule','Newton','Watt','Pascal'], ans:'Newton'},
+          {q:'Speed of light approx (m/s)?', a:['3×10^8','3×10^6','3×10^5','3×10^7'], ans:'3×10^8'},
+          {q:'Who formulated gravity law?', a:['Einstein','Newton','Galileo','Maxwell'], ans:'Newton'},
+          {q:'SI unit of energy?', a:['Watt','Newton','Joule','Pascal'], ans:'Joule'},
+          {q:'Which is scalar quantity?', a:['Velocity','Acceleration','Speed','Momentum'], ans:'Speed'}
+        ]
+      },
+      'chem':{
+        title:'Chemistry',desc:'Elements, reactions & compounds',
+        qs:[
+          {q:'Water chemical formula?', a:['H2O','HO2','OH2','H3O'], ans:'H2O'},
+          {q:'pH below 7 means?', a:['Neutral','Basic','Acidic','Alkaline'], ans:'Acidic'},
+          {q:'Atomic number denotes?', a:['Neutrons','Protons','Electrons','Isotopes'], ans:'Protons'},
+          {q:'Common name for NaCl?', a:['Sugar','Salt','Baking Soda','Vinegar'], ans:'Salt'},
+          {q:'Which gas is essential for respiration?', a:['Nitrogen','Oxygen','Hydrogen','Helium'], ans:'Oxygen'}
+        ]
+      },
+      'bio':{
+        title:'Biology',desc:'Cells, organisms & ecology',
+        qs:[
+          {q:'Basic unit of life?', a:['Atom','Cell','Organ','Tissue'], ans:'Cell'},
+          {q:'Which organ pumps blood?', a:['Lungs','Liver','Heart','Kidney'], ans:'Heart'},
+          {q:'Process plants use to make food?', a:['Respiration','Transpiration','Photosynthesis','Digestion'], ans:'Photosynthesis'},
+          {q:'DNA stands for?', a:['Deoxyribo Nucleic Acid','Ribonucleic Acid','Deoxyribo Nucleic Agent','Nucleic Deoxyribo Acid'], ans:'Deoxyribo Nucleic Acid'},
+          {q:'Which are producers in ecosystem?', a:['Animals','Plants','Fungi','Bacteria'], ans:'Plants'}
+        ]
+      },
+      'history':{
+        title:'History',desc:'Events, timelines & civilizations',
+        qs:[
+          {q:'Who discovered America (commonly credited)?', a:['Vasco da Gama','Christopher Columbus','Magellan','Columbus'], ans:'Christopher Columbus'},
+          {q:'The Great Wall is in which country?', a:['India','China','Egypt','Greece'], ans:'China'},
+          {q:'What year did WW2 end?', a:['1945','1939','1918','1950'], ans:'1945'},
+          {q:'Who was the first President of the USA?', a:['Abraham Lincoln','Thomas Jefferson','George Washington','John Adams'], ans:'George Washington'},
+          {q:'Renaissance began in which country?', a:['France','Italy','England','Spain'], ans:'Italy'}
+        ]
+      }
+    };
+
+    // ======= STATE =======
+    let state = {
+      user: null, // {name}
+      topicKey: null,
+      questions: [], // shuffled for topic
+      currentIndex: 0,
+      answers: [], // user answers
+      timer: null,
+      timeLeft: TIME_PER_Q,
+    };
+
+    // ======= UI ELEMENTS =======
+    const loginScreen = document.getElementById('loginScreen');
+    const topicScreen = document.getElementById('topicScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const resultScreen = document.getElementById('resultScreen');
+
+    const loginBtn = document.getElementById('loginBtn');
+    const guestLink = document.getElementById('guestLink');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const displayName = document.getElementById('displayName');
+    const welcome = document.getElementById('welcome');
+
+    const topicsGrid = document.getElementById('topicsGrid');
+
+    const progressText = document.getElementById('progressText');
+    const progressFill = document.getElementById('progressFill');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const topicNameEl = document.getElementById('topicName');
+    const questionText = document.getElementById('questionText');
+    const optionsList = document.getElementById('optionsList');
+    const prevBtn = document.getElementById('prevBtn');
+    const skipBtn = document.getElementById('skipBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const leaderboardOl = document.getElementById('leaderboardOl');
+
+    const resultTitle = document.getElementById('resultTitle');
+    const resultSummary = document.getElementById('resultSummary');
+    const replayBtn = document.getElementById('replayBtn');
+    const backTopicsBtn = document.getElementById('backTopicsBtn');
+
+    // sounds (tiny placeholders; in production use real assets)
+    const correctSound = document.getElementById('correctSound');
+    const wrongSound = document.getElementById('wrongSound');
+    const timeoutSound = document.getElementById('timeoutSound');
+
+    // ======= UTIL =======
+    function $(id){return document.getElementById(id)}
+
+    function shuffle(arr){
+      return arr.slice().sort(()=>Math.random()-0.5);
+    }
+
+    function saveSession(){
+      sessionStorage.setItem('quiz_user', JSON.stringify(state.user));
+    }
+    function loadSession(){
+      const u = sessionStorage.getItem('quiz_user');
+      if(u) state.user = JSON.parse(u);
+    }
+
+    // ======= AUTH =======
+    loginBtn.addEventListener('click',()=>{
+      const name = document.getElementById('username').value.trim();
+      const pwd = document.getElementById('password').value;
+      if(!name){alert('Please enter a name');return}
+      state.user = {name}; saveSession(); showTopics();
+    });
+    guestLink.addEventListener('click',(e)=>{e.preventDefault(); state.user={name:'Guest'}; saveSession(); showTopics();});
+
+    logoutBtn.addEventListener('click',()=>{sessionStorage.removeItem('quiz_user'); state.user=null; showLogin();});
+
+    function showLogin(){
+      loginScreen.style.display='block'; topicScreen.style.display='none'; quizScreen.style.display='none'; resultScreen.style.display='none';
+      welcome.style.display='none'; logoutBtn.style.display='none';
+    }
+
+    function showTopics(){
+      loadSession();
+      if(!state.user){ showLogin(); return}
+      loginScreen.style.display='none'; topicScreen.style.display='block'; quizScreen.style.display='none'; resultScreen.style.display='none';
+      welcome.style.display='block'; logoutBtn.style.display='inline-block'; displayName.textContent=state.user.name;
+      renderTopics();
+    }
+
+    // ======= TOPICS =======
+    function renderTopics(){
+      topicsGrid.innerHTML='';
+      Object.keys(topics).forEach(key=>{
+        const t = topics[key];
+        const div = document.createElement('div'); div.className='topic';
+        div.innerHTML = `<h3>${t.title}</h3><p>${t.desc}</p><div style="margin-top:8px;font-size:13px;color:rgba(255,255,255,0.75)">5 Questions · Timer: ${TIME_PER_Q}s</div>`;
+        div.addEventListener('click',()=>startTopic(key));
+        topicsGrid.appendChild(div);
+      })
+    }
+
+    // ======= QUIZ LOGIC =======
+    function startTopic(key){
+      state.topicKey = key; state.currentIndex = 0; state.answers = [];
+      // prepare question set (pick first 5 or shuffle)
+      const qset = topics[key].qs.slice(0, QUESTION_COUNT);
+      state.questions = shuffle(qset).map(q=>({ ...q, choices: shuffle(q.a) }));
+      showQuiz();
+    }
+
+    function showQuiz(){
+      topicScreen.style.display='none'; quizScreen.style.display='block'; resultScreen.style.display='none';
+      topicNameEl.textContent = topics[state.topicKey].title;
+      updateProgress();
+      renderQuestion();
+      startTimer();
+      renderLeaderboard();
+    }
+
+    function renderQuestion(){
+      const qObj = state.questions[state.currentIndex];
+      questionText.textContent = qObj.q;
+      optionsList.innerHTML='';
+      qObj.choices.forEach(choice=>{
+        const div = document.createElement('div'); div.className='option'; div.textContent = choice;
+        div.addEventListener('click',()=>handleAnswer(div, choice));
+        optionsList.appendChild(div);
+      });
+      // if already answered, show selection
+      const saved = state.answers[state.currentIndex];
+      if(saved){
+        // mark correct/wrong
+        Array.from(optionsList.children).forEach(opt=>{
+          opt.classList.add('disabled');
+          if(opt.textContent === state.questions[state.currentIndex].ans) opt.classList.add('correct');
+          if(opt.textContent === saved && saved !== state.questions[state.currentIndex].ans) opt.classList.add('wrong');
+        })
+      }
+    }
+
+    function handleAnswer(elem, choice){
+      clearTimer();
+      const correct = state.questions[state.currentIndex].ans;
+      // record
+      state.answers[state.currentIndex] = choice;
+      Array.from(optionsList.children).forEach(opt=>opt.classList.add('disabled'));
+      if(choice === correct){ elem.classList.add('correct'); playSound('correct'); }
+      else{ elem.classList.add('wrong'); // highlight correct
+        Array.from(optionsList.children).forEach(opt=>{ if(opt.textContent===correct) opt.classList.add('correct') });
+        playSound('wrong');
+      }
+      // allow moving next after short delay
+      setTimeout(()=>{
+        if(state.currentIndex < state.questions.length -1){ state.currentIndex++; updateProgress(); renderQuestion(); startTimer(); }
+        else{ // auto end
+          showResult();
+        }
+        renderLeaderboard();
+      }, 900);
+    }
+
+    function prevQuestion(){
+      if(state.currentIndex>0){ state.currentIndex--; updateProgress(); renderQuestion(); resetTimer(); }
+    }
+    function skipQuestion(){
+      state.answers[state.currentIndex] = null; clearTimer();
+      if(state.currentIndex < state.questions.length -1){ state.currentIndex++; updateProgress(); renderQuestion(); startTimer(); }
+      else showResult();
+    }
+
+    // ====== TIMER ======
+    function startTimer(){
+      state.timeLeft = TIME_PER_Q; timerDisplay.textContent = state.timeLeft;
+      state.timer = setInterval(()=>{
+        state.timeLeft--; timerDisplay.textContent=state.timeLeft;
+        if(state.timeLeft<=0){
+          clearInterval(state.timer); playSound('timeout'); state.answers[state.currentIndex]=null;
+          // show correct answer highlight
+          Array.from(optionsList.children).forEach(opt=>{ if(opt.textContent===state.questions[state.currentIndex].ans) opt.classList.add('correct'); opt.classList.add('disabled'); });
+          setTimeout(()=>{
+            if(state.currentIndex < state.questions.length -1){ state.currentIndex++; updateProgress(); renderQuestion(); startTimer(); }
+            else showResult();
+            renderLeaderboard();
+          },900);
+        }
+      },1000);
+    }
+    function clearTimer(){ if(state.timer) clearInterval(state.timer); }
+    function resetTimer(){ clearTimer(); startTimer(); }
+
+    // ===== PROGRESS =====
+    function updateProgress(){
+      progressText.textContent = `Question ${state.currentIndex+1} of ${state.questions.length}`;
+      const pct = ((state.currentIndex) / state.questions.length) * 100;
+      progressFill.style.width = Math.round(((state.currentIndex+1)/state.questions.length)*100) + '%';
+    }
+
+    // ===== LEADERBOARD (localStorage per topic) =====
+    function renderLeaderboard(){
+      const key = `leaderboard_${state.topicKey}`;
+      const list = JSON.parse(localStorage.getItem(key) || '[]');
+      leaderboardOl.innerHTML = '';
+      list.slice(0,10).forEach(entry=>{
+        const li = document.createElement('li'); li.textContent = `${entry.name} — ${entry.score}/${state.questions.length}`; leaderboardOl.appendChild(li);
+      });
+    }
+    function saveToLeaderboard(name, score){
+      const key = `leaderboard_${state.topicKey}`;
+      const list = JSON.parse(localStorage.getItem(key) || '[]');
+      list.push({name,score,date:new Date().toISOString()});
+      list.sort((a,b)=>b.score-a.score);
+      localStorage.setItem(key, JSON.stringify(list.slice(0,20)));
+    }
+
+    // ===== RESULTS =====
+    function showResult(){
+      clearTimer(); quizScreen.style.display='none'; resultScreen.style.display='block';
+      // calculate score
+      const total = state.questions.length; let correct = 0;
+      state.answers.forEach((ans,i)=>{ if(ans === state.questions[i].ans) correct++; });
+      resultTitle.textContent = `Well done, ${state.user.name}!`;
+      resultSummary.innerHTML = `You scored <strong>${correct}</strong> out of <strong>${total}</strong>.<br>Answers reviewed and leaderboard updated.`;
+      // save
+      saveToLeaderboard(state.user.name, correct);
+      renderLeaderboard();
+    }
+
+    // ===== NAV ACTIONS =====
+    prevBtn.addEventListener('click',()=>{ prevQuestion(); });
+    skipBtn.addEventListener('click',()=>{ skipQuestion(); });
+    submitBtn.addEventListener('click',()=>{ if(confirm('Submit quiz now?')) showResult(); });
+    backTopicsBtn.addEventListener('click',()=>{ showTopics(); });
+    replayBtn.addEventListener('click',()=>{ startTopic(state.topicKey); });
+
+    // ===== SOUND PLAY =====
+    function playSound(kind){ try{
+      if(kind==='correct') correctSound.play();
+      else if(kind==='wrong') wrongSound.play();
+      else timeoutSound.play();
+    }catch(e){ /* ignore autoplay restrictions */ } }
+
+    // ===== BOOT =====n
+    loadSession();
+    if(state.user) showTopics(); else showLogin();
+
+  </script>
+</body>
+</html>
